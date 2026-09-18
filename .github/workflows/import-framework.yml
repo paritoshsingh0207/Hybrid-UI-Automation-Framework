@@ -34,10 +34,13 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          # Force-add is intentional here. The framework contains source packages
+          # named "artifacts", while .gitignore also ignores generated artifacts/.
+          # Those source files are tracked in the original branch and must remain tracked.
+          git add -f -A
           if git diff --cached --quiet; then
             echo 'Destination already matches the source branch.'
             exit 0
           fi
-          git commit -m 'Import hybrid Selenium Playwright framework'
+          git commit -m 'Import tracked framework files ignored by generic patterns'
           git push origin main
