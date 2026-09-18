@@ -1,0 +1,43 @@
+name: Bootstrap framework import
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  import-framework:
+    if: github.event.head_commit.message == 'Bootstrap framework import'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out destination repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clone the source framework branch
+        run: |
+          git clone --depth 1 --branch hybrid-selenium-playwright-framework \
+            https://github.com/paritoshsingh0207/Selenium-Framework.git /tmp/framework-source
+
+      - name: Copy the framework snapshot
+        run: |
+          rsync -a --delete \
+            --exclude '.git/' \
+            --exclude '.github/workflows/' \
+            /tmp/framework-source/ ./
+
+      - name: Commit framework contents to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'Destination already matches the source branch.'
+            exit 0
+          fi
+          git commit -m 'Import hybrid Selenium Playwright framework'
+          git push origin main
