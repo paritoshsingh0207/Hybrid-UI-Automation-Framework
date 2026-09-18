@@ -1,0 +1,8 @@
+target/
+artifacts/
+.allure/
+.idea/
+.vscode/
+*.iml
+*.log
+.DS_Store
