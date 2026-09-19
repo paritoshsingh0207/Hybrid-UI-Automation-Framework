@@ -15,6 +15,12 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
+        <!--
+            testng.xml is the normal suite. A secured sample can choose another
+            suite at runtime, for example -DsuiteXmlFile=orangehrm-testng.xml.
+        -->
+        <suiteXmlFile>testng.xml</suiteXmlFile>
+
         <!-- Library versions live here so upgrades can be done from one place. -->
         <selenium.version>4.13.0</selenium.version>
         <playwright.version>1.61.0</playwright.version>
@@ -144,15 +150,15 @@
                 </configuration>
             </plugin>
 
-            <!-- Surefire starts TestNG and points it to our suite file. -->
+            <!-- Surefire starts TestNG and points it to our selected suite file. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
                 <configuration>
-                    <!-- The suite contains both feature-file and Excel test entry points. -->
+                    <!-- Defaults to testng.xml; secured samples can select their own suite. -->
                     <suiteXmlFiles>
-                        <suiteXmlFile>testng.xml</suiteXmlFile>
+                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
                     </suiteXmlFiles>
 
                     <systemPropertyVariables>
