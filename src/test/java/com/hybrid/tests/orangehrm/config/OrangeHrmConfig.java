@@ -6,7 +6,8 @@ import com.hybrid.framework.config.SecretConfig;
  * Configuration owned by the OrangeHRM sample, not by the reusable framework.
  *
  * The URL is safe to keep in source. Credentials are deliberately different:
- * they come from environment variables so no real password is stored in Git.
+ * local runs can read them from a properties file outside the repository, and
+ * CI can read them from environment variables backed by the CI secret store.
  */
 public final class OrangeHrmConfig {
     private static final String DEFAULT_LOGIN_URL =
@@ -20,10 +21,10 @@ public final class OrangeHrmConfig {
     }
 
     public static String username() {
-        return SecretConfig.requiredEnvironmentVariable("ORANGEHRM_USERNAME");
+        return SecretConfig.requiredSecret("orangehrm.username", "ORANGEHRM_USERNAME");
     }
 
     public static String password() {
-        return SecretConfig.requiredEnvironmentVariable("ORANGEHRM_PASSWORD");
+        return SecretConfig.requiredSecret("orangehrm.password", "ORANGEHRM_PASSWORD");
     }
 }
