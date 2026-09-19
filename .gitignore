@@ -7,10 +7,13 @@ artifacts/
 *.log
 .DS_Store
 
-# Never commit local credential files. The framework reads real secrets from
-# environment variables or the CI/CD secret store instead.
+# Never commit local credential files. Local runs may read them through
+# -Dcredentials.file, while CI should use its secret store/environment variables.
 .env
 .env.*
 !.env.example
 secrets.properties
 *.secrets.properties
+credentials.properties
+*-credentials.properties
+*.credentials.properties
