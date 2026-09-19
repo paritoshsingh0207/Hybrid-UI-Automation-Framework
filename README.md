@@ -1,94 +1,175 @@
-# Hybrid Selenium + Playwright Automation Framework
+# Hybrid Selenium + Playwright UI Automation Framework
 
-A Java 8 Maven framework where the same test flow can run with **Selenium** or **Playwright**, and test data can come from either a **Cucumber feature file** or **Excel**.
+A Java 8 Maven automation framework designed to demonstrate reusable framework engineering rather than a single website script.
 
-The repository now contains two sample applications:
+The same application-facing automation layer can run through **Selenium** or **Playwright** at runtime, with Cucumber/TestNG, feature/Excel data, parallel execution, retries, controlled self-healing, screenshots, logging, Allure, and a detailed PDF evidence report.
 
-1. **Practice Test Automation** — public training site used for the normal feature/Excel examples.
-2. **OrangeHRM Open Source Demo** — second application used to prove that the framework layer is reusable across websites. Its credentials are supplied outside source control.
+Two applications are included to demonstrate reusability:
 
-## What is included
+1. **Practice Test Automation** - feature-file and Excel-driven demo flows.
+2. **OrangeHRM Open Source Demo** - second application plus secure runtime credential handling.
 
-- Selenium / Playwright selection at runtime
-- Chrome, Edge, Firefox, Chromium, WebKit and Safari where supported by the selected engine
-- Cucumber + TestNG
-- Feature-file test data
-- Excel test data (`.xlsx` / `.xls` reader through Apache POI)
+## Key capabilities
+
+- Java 8 + Maven
+- Runtime Selenium / Playwright selection
+- Multi-browser support with compatibility validation
+- Common `UiDriver` abstraction
 - Page Object Model
-- Separate application-specific page/flow layers on top of one reusable framework
-- Parallel execution
-- Retry logic
+- Cucumber BDD + TestNG
+- Feature, Excel, or combined test-data execution
+- Thread-local browser isolation for parallel tests
+- Retry policy
 - Failure screenshots
-- Log4j2 execution logs
-- Allure results/reporting
-- Detailed PDF execution report with step and assertion evidence
-- Controlled self-healing with declared fallback locators
-- Environment-variable / CI-secret handling for sensitive credentials
+- Log4j2 logging
+- Controlled fallback-locator self-healing
+- Allure reporting
+- Detailed PDF report with ordered steps and assertions
+- Expected vs actual assertion evidence
+- Secure local credential file support
+- GitHub Actions secret support
 
-## Important folders
-
-```text
-src/main/java/com/hybrid/framework/                 reusable framework code
-src/test/java/com/hybrid/tests/                     Practice Test Automation sample
-src/test/java/com/hybrid/tests/orangehrm/           OrangeHRM sample
-src/test/resources/features/                        normal feature files
-src/test/resources/secure-features/orangehrm/       OrangeHRM feature without credentials
-docs/SECURITY.md                                    secret-handling guidance
-```
-
-The important separation is:
+## Architecture
 
 ```text
-Reusable framework
-    UiDriver / Selenium / Playwright / retry / logging / reports / healing
-                         |
-                         +---- Practice Test Automation pages + flows
-                         |
-                         +---- OrangeHRM pages + flows
+Cucumber / Excel / TestNG
+          |
+          v
+Steps -> Scenario Executor -> Page Objects
+          |
+          v
+       UiDriver
+          |
+    UiDriverFactory
+      /       \
+Selenium   Playwright
+      \       /
+    HealingUiDriver
+          |
+    LoggingUiDriver
+          |
+        Browser
+
+Execution evidence
+  -> screenshots
+  -> retries
+  -> self-healing events
+  -> PDF report
+  -> Allure
 ```
 
-That is intentional. A new website adds its own page objects and business flows without rewriting the core driver/reporting infrastructure.
+Framework infrastructure lives under `src/main/java/com/hybrid/framework`. Application-specific automation lives under `src/test/java/com/hybrid/tests`.
 
 ## Prerequisites
 
-- JDK 8+
-- Maven 3.9+
-- Chrome / Edge / Firefox installed for Selenium runs
-- Playwright browser binaries installed before Playwright runs
+- JDK 8
+- Maven 3.x
+- Git
+- Chrome / Firefox / Edge for Selenium runs as required
+- Playwright browser binaries for Playwright runs
 
-Check your local setup:
-
-```bash
+```powershell
 java -version
 mvn -version
+git --version
 ```
 
-## First run: Practice Test Automation
+## Clone
 
-Use `headless=false` so you can watch the browser.
+```powershell
+git clone https://github.com/paritoshsingh0207/Hybrid-UI-Automation-Framework.git
+cd Hybrid-UI-Automation-Framework
+```
+
+## Practice Test Automation - Selenium
+
+Feature data:
 
 ```powershell
 mvn clean test -Ddata.source=feature -Dengine=selenium -Dbrowser=chrome -Dheadless=false -Dparallel.mode=none
 ```
 
-The normal suite is `testng.xml`.
+Excel data:
 
-## OrangeHRM secure sample
-
-Target:
-
-```text
-https://opensource-demo.orangehrmlive.com/web/index.php/auth/login
+```powershell
+mvn clean test -Ddata.source=excel -Dengine=selenium -Dbrowser=chrome -Dheadless=false -Dparallel.mode=none
 ```
 
-The OrangeHRM feature contains **no username or password value**. The flow reads these values at runtime:
+Both:
+
+```powershell
+mvn clean test -Ddata.source=both -Dengine=selenium -Dbrowser=chrome -Dheadless=false -Dparallel.mode=none
+```
+
+## Playwright
+
+Install browser binaries once:
+
+```powershell
+mvn -q -DskipTests compile
+mvn exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install"
+```
+
+Run:
+
+```powershell
+mvn clean test -Ddata.source=feature -Dengine=playwright -Dbrowser=chromium -Dheadless=false -Dparallel.mode=none
+```
+
+## OrangeHRM - secure local credentials
+
+Do **not** store the OrangeHRM username/password in this repository.
+
+Create a properties file outside the cloned project, for example:
+
+```text
+C:\AutomationSecrets\orangehrm-credentials.properties
+```
+
+Contents:
+
+```properties
+orangehrm.username=your-username
+orangehrm.password=your-password
+```
+
+Run:
+
+```powershell
+mvn clean test `
+  -DsuiteXmlFile=orangehrm-testng.xml `
+  -Dcredentials.file="C:\AutomationSecrets\orangehrm-credentials.properties" `
+  -Ddata.source=feature `
+  -Dengine=selenium `
+  -Dbrowser=chrome `
+  -Dheadless=false `
+  -Dparallel.mode=none
+```
+
+The framework resolves OrangeHRM credentials in this order:
+
+```text
+-Dcredentials.file supplied?
+       |
+       +-- yes --> local properties file
+       |
+       +-- no  --> ORANGEHRM_USERNAME / ORANGEHRM_PASSWORD
+```
+
+If a credential file is explicitly supplied but missing/incomplete, execution fails clearly instead of silently falling back.
+
+`credentials.example.properties` is an empty safe template only. Never put a real password into that tracked file.
+
+## OrangeHRM - environment / CI credentials
+
+Without `-Dcredentials.file`, set:
 
 ```text
 ORANGEHRM_USERNAME
 ORANGEHRM_PASSWORD
 ```
 
-Windows PowerShell:
+PowerShell example:
 
 ```powershell
 $env:ORANGEHRM_USERNAME="your-username"
@@ -97,256 +178,118 @@ $env:ORANGEHRM_PASSWORD="your-password"
 mvn clean test -DsuiteXmlFile=orangehrm-testng.xml -Ddata.source=feature -Dengine=selenium -Dbrowser=chrome -Dheadless=false -Dparallel.mode=none
 ```
 
-macOS/Linux:
-
-```bash
-export ORANGEHRM_USERNAME="your-username"
-export ORANGEHRM_PASSWORD="your-password"
-
-mvn clean test \
-  -DsuiteXmlFile=orangehrm-testng.xml \
-  -Ddata.source=feature \
-  -Dengine=selenium \
-  -Dbrowser=chrome \
-  -Dheadless=false \
-  -Dparallel.mode=none
-```
-
-The secured suite is kept separate from `testng.xml`, so a fresh clone can still run the normal demo without OrangeHRM credentials.
-
-For GitHub Actions, create repository secrets named:
+In GitHub Actions, store the same names under:
 
 ```text
-ORANGEHRM_USERNAME
-ORANGEHRM_PASSWORD
+Repository -> Settings -> Secrets and variables -> Actions
 ```
 
-Then manually select `orangehrm-testng.xml` from the workflow-dispatch inputs. The workflow exposes the secret values only to the test process.
+The workflow reads the GitHub secrets as environment variables; secret values are not committed in YAML.
 
-See `docs/SECURITY.md` for the full security setup.
+See `docs/SECURITY.md` for the complete credential design.
 
-## Why credentials are not passed with `-Dpassword=...`
+## Reporting
 
-A password passed on the command line can end up in shell history, process listings, CI logs or copied command examples. Environment variables / CI secret stores are a better default for test credentials.
+After execution, important outputs include:
 
-The framework also masks password values in normal logging and in PDF evidence by default.
+```text
+artifacts/logs/
+artifacts/screenshots/
+artifacts/self-healing/
+target/allure-results/
+target/reports/hybrid-automation-report.pdf
+```
 
-Do **not** enable:
+The custom PDF records:
+
+- final test status
+- engine/browser/thread/attempt
+- ordered business actions
+- action PASS/FAIL
+- assertions recorded through `ReportAssert`
+- expected and actual values
+- assertion PASS/FAIL
+- retry history
+- screenshots when available
+- self-healing evidence
+- environment information
+
+Passwords remain masked by default. Do not use:
 
 ```text
 -Dreport.showSensitiveData=true
 ```
 
-when real credentials are being used.
-
-## Playwright setup and run
-
-Install the Playwright browser binaries once:
-
-```bash
-mvn -q -DskipTests compile
-mvn exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install"
-```
-
-Then run the normal sample:
-
-```bash
-mvn clean test \
-  -Ddata.source=feature \
-  -Dengine=playwright \
-  -Dbrowser=chromium \
-  -Dheadless=false \
-  -Dparallel.mode=none
-```
-
-The OrangeHRM secure suite can use Playwright as well:
-
-```bash
-mvn clean test \
-  -DsuiteXmlFile=orangehrm-testng.xml \
-  -Ddata.source=feature \
-  -Dengine=playwright \
-  -Dbrowser=chromium \
-  -Dheadless=false \
-  -Dparallel.mode=none
-```
-
-## Run with Excel data
-
-The workbook is:
-
-`src/test/resources/testdata/login-data.xlsx`
-
-Selenium:
-
-```bash
-mvn clean test -Ddata.source=excel -Dengine=selenium -Dbrowser=chrome -Dheadless=false -Dparallel.mode=none
-```
-
-Playwright:
-
-```bash
-mvn clean test -Ddata.source=excel -Dengine=playwright -Dbrowser=chromium -Dheadless=false -Dparallel.mode=none
-```
-
-## Run both normal data sources
-
-```bash
-mvn clean test -Ddata.source=both -Dengine=selenium -Dbrowser=chrome
-```
-
-Feature scenarios and Excel rows are separate test invocations while reusing the same Practice Test Automation page objects and `LoginScenarioExecutor`.
-
-## Use another environment URL
-
-The Practice Test Automation sample URL can be overridden:
-
-```bash
-mvn clean test -DbaseUrl="https://your-test-environment.example/login" ...
-```
-
-The OrangeHRM sample URL can be overridden separately:
-
-```bash
--Dorangehrm.baseUrl="https://your-orangehrm-environment.example/auth/login"
-```
-
-Changing only a URL does **not** make arbitrary website locators compatible. Each application owns its page objects and business flow while the framework layer stays unchanged.
-
-## Parallel execution
-
-```bash
-mvn clean test -Dparallel.mode=methods -Dthread.count=4 -Ddataprovider.thread.count=4
-```
-
-For a first visual run, use `-Dparallel.mode=none`.
-
-## Retry
-
-By default, transient browser/automation failures get one additional attempt. Assertion failures are not retried unless explicitly enabled.
-
-```bash
-mvn clean test -Dretry.count=2
-mvn clean test -Dretry.count=1 -Dretry.assertions=true
-mvn clean test -Dretry.count=0
-```
-
-## Self-healing
-
-The framework does not invent locators or edit source code. It only tries fallback locators deliberately declared in the page object.
-
-```bash
-mvn clean test -Dself.healing.enabled=true
-mvn clean test -Dself.healing.enabled=false
-```
-
-When a fallback is used, the event is written to logs and report evidence.
-
-## Reports and evidence
-
-After execution:
-
-- `artifacts/logs/` — detailed Log4j2 logs
-- `artifacts/screenshots/` — failure screenshots
-- `artifacts/self-healing/` — healing evidence
-- `target/allure-results/` — Allure raw results
-- `target/reports/hybrid-automation-report.pdf` — detailed PDF report
-
-The PDF includes:
-
-- overall test status and duration
-- engine, browser, thread and attempt number
-- ordered business actions
-- action PASS / FAIL status
-- assertions routed through `ReportAssert`
-- expected and actual values
-- failure messages
-- failure screenshots when available
-- self-healing evidence
-- retry / attempt history
-- operating system and Java version
-
-For OrangeHRM, a secured execution can read like:
-
-```text
-Step 1 | ACTION | PASSED | User opens the OrangeHRM login page
-Step 2 | ACTION | PASSED | User enters the configured OrangeHRM username
-Step 3 | ACTION | PASSED | User enters the OrangeHRM password as '<masked>'
-Step 4 | ACTION | PASSED | User clicks the OrangeHRM Login button
-Step 5 | ACTION | PASSED | User waits for the OrangeHRM dashboard to load
-Step 6 | ASSERTION | PASSED | Verify OrangeHRM dashboard URL
-Step 7 | ASSERTION | PASSED | Verify OrangeHRM dashboard heading
-Step 8 | ASSERTION | PASSED | Verify OrangeHRM dashboard is visible
-```
-
-### Recording actions in future tests
-
-```java
-ReportEvidenceContext.action(
-        "User clicks the Save button",
-        new Runnable() {
-            @Override
-            public void run() {
-                page.clickSave();
-            }
-        });
-```
-
-### Recording assertions in future tests
-
-```java
-ReportAssert.assertEquals(
-        "Verify confirmation message",
-        actualMessage,
-        expectedMessage);
-```
-
-or:
-
-```java
-ReportAssert.assertTrue(
-        "Verify dashboard is visible",
-        dashboardVisible,
-        "Dashboard visible = true",
-        "Dashboard visible = " + dashboardVisible);
-```
+with real credentials.
 
 Generate Allure HTML:
 
-```bash
+```powershell
 mvn allure:report
 ```
 
-Open Allure locally:
+Serve it locally:
 
-```bash
+```powershell
 mvn allure:serve
 ```
 
-## Useful runtime properties
+## Retry
 
-| Property | Default |
-|---|---|
-| `suiteXmlFile` | `testng.xml` |
-| `engine` | `selenium` |
-| `browser` | `chrome` |
-| `data.source` | `feature` |
-| `baseUrl` | Practice Test Automation login URL |
-| `orangehrm.baseUrl` | OrangeHRM Open Source Demo login URL |
-| `headless` | `true` |
-| `parallel.mode` | `methods` |
-| `thread.count` | `4` |
-| `dataprovider.thread.count` | `4` |
-| `retry.count` | `1` |
-| `self.healing.enabled` | `true` |
-| `report.showSensitiveData` | `false` |
+```powershell
+mvn clean test -Dretry.count=2
+mvn clean test -Dretry.count=0
+mvn clean test -Dretry.count=1 -Dretry.assertions=true
+```
 
-## Security note
+Assertion failures are not retried by default.
 
-The Practice Test Automation project is a public training website whose demo credentials are intentionally published by that site. That is different from a real application credential.
+## Parallel execution
 
-For OrangeHRM and any real project, keep credentials outside the repository. Use environment variables locally and your CI/CD platform's secret store in pipelines.
+```powershell
+mvn clean test -Dparallel.mode=methods -Dthread.count=4 -Ddataprovider.thread.count=4
+```
 
-## Java 8 compatibility
+For debugging, start with:
 
-This repository targets JDK 1.8. Selenium is intentionally pinned to 4.13.0, the final Selenium release that supports Java 8. TestNG is pinned to 7.5.1 for the same reason. Newer Java syntax such as records, switch expressions, `String.isBlank()`, `List.of()` and `Stream.toList()` is not used in the source.
+```text
+-Dparallel.mode=none
+```
+
+## Controlled self-healing
+
+Self-healing uses only fallback locators intentionally declared in a page object. It does not invent selectors, use an LLM, or modify source code automatically.
+
+```powershell
+-Dself.healing.enabled=true
+-Dself.healing.enabled=false
+```
+
+A successful fallback is recorded in logs/report evidence.
+
+## Adding another website
+
+Add the new application's pages, flows, steps and runner under `src/test/java/com/hybrid/tests/<application>` and reuse the core framework:
+
+- `UiDriver`
+- Selenium / Playwright implementations
+- logging
+- healing
+- retry
+- screenshots
+- PDF evidence
+- Allure
+- secure configuration
+
+This separation is the central design goal of the project.
+
+## Full documentation
+
+- `docs/FRAMEWORK_GUIDE.md` - architecture, class responsibilities, security setup and complete run instructions
+- `docs/SECURITY.md` - local credential file, environment variables, GitHub Actions secrets and masking rules
+- `docs/HOW_IT_WORKS.md` - concise execution-flow overview
+- `VALIDATION.md` - validation notes
+
+## Interview summary
+
+> I designed a Java 8 hybrid UI automation framework where tests are not directly coupled to Selenium. A common UiDriver abstraction allows runtime Selenium or Playwright execution. The framework adds Cucumber/TestNG, Excel data, retry handling, parallel isolation, controlled self-healing, screenshots, Allure and detailed PDF evidence. I validated the reusable design against two applications and implemented secure credential resolution through local files or CI secret stores rather than source-controlled passwords.
