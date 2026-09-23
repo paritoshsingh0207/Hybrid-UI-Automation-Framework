@@ -1,54 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.hybrid.automation</groupId>
-    <artifactId>hybrid-ui-automation-framework</artifactId>
+    <groupId>com.simple.automation</groupId>
+    <artifactId>selenium-java-bdd</artifactId>
     <version>1.0.0</version>
-    <name>Hybrid UI Automation Framework</name>
-    <description>Java framework supporting Selenium, Playwright, Cucumber feature data, Excel data, retries, parallelism, Allure, PDF reports and controlled self-healing.</description>
+    <name>Selenium Java BDD</name>
 
     <properties>
-        <!-- Keep source and target at Java 8 because the framework is intended to run on JDK 8+. -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-
-        <!--
-            testng.xml is the normal suite. A secured sample can choose another
-            suite at runtime, for example -DsuiteXmlFile=orangehrm-testng.xml.
-        -->
-        <suiteXmlFile>testng.xml</suiteXmlFile>
-
-        <!-- Library versions live here so upgrades can be done from one place. -->
         <selenium.version>4.13.0</selenium.version>
-        <playwright.version>1.61.0</playwright.version>
-        <testng.version>7.5.1</testng.version>
         <cucumber.version>7.20.1</cucumber.version>
+        <junit.version>4.13.2</junit.version>
         <allure.version>2.29.1</allure.version>
-        <allure.maven.version>2.16.1</allure.maven.version>
-        <poi.version>5.5.1</poi.version>
-        <pdfbox.version>3.0.5</pdfbox.version>
-        <log4j.version>2.24.3</log4j.version>
-        <surefire.version>3.2.5</surefire.version>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Allure BOM keeps all Allure modules on mutually compatible versions. -->
-            <dependency>
-                <groupId>io.qameta.allure</groupId>
-                <artifactId>allure-bom</artifactId>
-                <version>${allure.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
-        <!-- Browser automation engines. Tests use the common UiDriver abstraction above these libraries. -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
@@ -56,135 +27,45 @@
         </dependency>
 
         <dependency>
-            <groupId>com.microsoft.playwright</groupId>
-            <artifactId>playwright</artifactId>
-            <version>${playwright.version}</version>
-        </dependency>
-
-        <!-- Execution logging. -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-
-        <!-- Apache POI reads Excel-based test data. -->
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>${poi.version}</version>
-        </dependency>
-
-        <!-- PDFBox creates the framework's standalone PDF execution report. -->
-        <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>${pdfbox.version}</version>
-        </dependency>
-
-        <!--
-            Common Allure API used directly by framework utilities.
-            For example, AllureSupport uses this for screenshots, text attachments and environment data.
-        -->
-        <dependency>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-java-commons</artifactId>
-        </dependency>
-
-        <!-- TestNG is the execution engine used by both normal tests and the Cucumber runner. -->
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>${testng.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Cucumber provides feature files and the TestNG bridge. -->
-        <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
             <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-testng</artifactId>
+            <artifactId>cucumber-junit</artifactId>
             <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
 
-        <!-- Publishes TestNG test lifecycle and results to Allure. -->
         <dependency>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-testng</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
 
-        <!--
-            Publishes Cucumber 7 scenarios and steps to Allure.
-            CucumberTestRunner references io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm,
-            so this dependency must be present on the test classpath.
-        -->
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-cucumber7-jvm</artifactId>
+            <version>${allure.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Compile the project using the Java version declared in the properties section. -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
-
-            <!-- Surefire starts TestNG and points it to our selected suite file. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire.version}</version>
-                <configuration>
-                    <!-- Defaults to testng.xml; secured samples can select their own suite. -->
-                    <suiteXmlFiles>
-                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
-                    </suiteXmlFiles>
-
-                    <systemPropertyVariables>
-                        <!-- Keep encoding consistent on developer machines and CI. -->
-                        <file.encoding>UTF-8</file.encoding>
-
-                        <!--
-                            Force every Allure adapter inside the forked test JVM to write to the
-                            same folder that the Maven Allure plugin reads afterwards.
-                        -->
-                        <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
-                    </systemPropertyVariables>
-
-                    <!-- Full stack traces are useful when an automation failure needs debugging. -->
-                    <trimStackTrace>false</trimStackTrace>
-                </configuration>
+                <version>3.2.5</version>
             </plugin>
-
-            <!-- Generates the Allure HTML report from target/allure-results after test execution. -->
             <plugin>
                 <groupId>io.qameta.allure</groupId>
                 <artifactId>allure-maven</artifactId>
-                <version>${allure.maven.version}</version>
-                <configuration>
-                    <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
-                </configuration>
+                <version>2.16.1</version>
             </plugin>
         </plugins>
     </build>
