@@ -1,43 +1,33 @@
-# Simple Selenium Java BDD Framework
+# Selenium Java BDD Framework
 
-A deliberately small Selenium + Java + Cucumber framework for learning, interviews, and portfolio demonstrations.
+A lean but production-style Selenium + Java + Cucumber BDD framework.
 
-## Stack
-- Java 8+
-- Maven
-- Selenium WebDriver
-- Cucumber BDD
-- JUnit 4 runner
-- Allure Report
+## Structure
 
-## Project structure
-```text
-src/test/java/com/simple/selenium/
-  runner/RunCucumberTest.java
-  steps/LoginSteps.java
-src/test/resources/
-  features/login.feature
-  allure.properties
-pom.xml
-```
+- BaseTest: shared test setup access
+- DriverManager: creates and manages WebDriver
+- Hooks: scenario lifecycle and failure screenshots
+- CommonActions: reusable click, sendText, dropdown, radio/checkbox, waits and screenshots
+- Page Objects: locators and business-level page actions
+- Step Definitions: readable BDD glue only
+- Allure: standard Cucumber Allure reporting
 
 ## Run
+
 ```bash
 mvn clean test
 ```
 
-The browser opens visibly by default. Run headless with:
+Headless:
+
 ```bash
 mvn clean test -Dheadless=true
 ```
 
-## Allure report
-After the test finishes:
+Allure:
+
 ```bash
 mvn allure:serve
 ```
 
-The example scenario logs in to https://practicetestautomation.com/practice-test-login/ using the public demo credentials shown by that practice site.
-
-## Why this branch is simple
-There is no hybrid browser abstraction, Excel layer, custom retry engine, PDF report, or self-healing. Cucumber describes the scenario, Selenium performs the browser actions, JUnit performs the assertion, and Allure generates the report.
+Default URL is configured in `src/test/resources/config.properties`.
