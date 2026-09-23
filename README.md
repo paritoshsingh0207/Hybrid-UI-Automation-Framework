@@ -1,49 +1,41 @@
-# Simple Playwright Java BDD Framework
+# Playwright Java BDD Framework
 
-A deliberately small Playwright + Java + Cucumber framework for learning, interviews, and portfolio demonstrations.
+A lean but production-style Playwright + Java + Cucumber BDD framework.
 
-## Stack
-- Java 8+
-- Maven
-- Playwright for Java
-- Cucumber BDD
-- JUnit 4 runner
-- Allure Report
+## Structure
 
-## Project structure
-```text
-src/test/java/com/simple/playwright/
-  runner/RunCucumberTest.java
-  steps/LoginSteps.java
-src/test/resources/
-  features/login.feature
-  allure.properties
-pom.xml
-```
-
-## First-time browser installation
-Install Chromium once:
-```bash
-mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install chromium"
-```
+- BaseTest: shared page access
+- BrowserManager: creates and manages Playwright, Browser, Context and Page
+- Hooks: scenario lifecycle and failure screenshots
+- CommonActions: reusable click, sendText, dropdown, radio/checkbox, hover and screenshots
+- Page Objects: selectors and business-level page actions
+- Step Definitions: readable BDD glue only
+- Allure: standard Cucumber Allure reporting
 
 ## Run
+
+Install Playwright Chromium once if required:
+
+```bash
+mvn exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install chromium"
+```
+
+Run tests:
+
 ```bash
 mvn clean test
 ```
 
-The browser opens visibly by default. Run headless with:
+Headless:
+
 ```bash
 mvn clean test -Dheadless=true
 ```
 
-## Allure report
-After the test finishes:
+Allure:
+
 ```bash
 mvn allure:serve
 ```
 
-The example scenario logs in to https://practicetestautomation.com/practice-test-login/ using the public demo credentials shown by that practice site.
-
-## Why this branch is simple
-There is no Selenium dependency, hybrid driver abstraction, Excel layer, custom retry engine, PDF report, or self-healing. Cucumber describes the scenario, Playwright performs the browser actions, JUnit performs the assertion, and Allure generates the report.
+Default URL is configured in `src/test/resources/config.properties`.

@@ -1,6 +1,8 @@
-Feature: Practice login
+Feature: Login
 
-  Scenario: Login with valid credentials
-    Given I open the practice test login page
-    When I login with username "student" and password "Password123"
-    Then I should see the successful login page
+  Scenario: Successful login
+    Given user opens the login page
+    When user enters username "student"
+    And user enters password "Password123"
+    And user clicks the submit button
+    Then successful login page should be displayed
