@@ -6,8 +6,11 @@ import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class BrowserManager {
+    private static final Logger LOGGER = LogManager.getLogger(BrowserManager.class);
     private static final ThreadLocal<Playwright> PLAYWRIGHT = new ThreadLocal<Playwright>();
     private static final ThreadLocal<Browser> BROWSER = new ThreadLocal<Browser>();
     private static final ThreadLocal<BrowserContext> CONTEXT = new ThreadLocal<BrowserContext>();
@@ -16,29 +19,38 @@ public final class BrowserManager {
     private BrowserManager() { }
 
     public static void startBrowser() {
-        Playwright playwright = Playwright.create();
-        PLAYWRIGHT.set(playwright);
-
-        BrowserType browserType;
         String browserName = ConfigReader.get("browser").toLowerCase();
-        if ("firefox".equals(browserName)) {
-            browserType = playwright.firefox();
-        } else if ("webkit".equals(browserName)) {
-            browserType = playwright.webkit();
-        } else {
-            browserType = playwright.chromium();
-        }
-
         boolean headless = Boolean.parseBoolean(ConfigReader.get("headless"));
-        Browser browser = browserType.launch(new BrowserType.LaunchOptions().setHeadless(headless));
-        BROWSER.set(browser);
+        LOGGER.info("Starting Playwright browser: {} | headless={}", browserName, headless);
 
-        BrowserContext context = browser.newContext();
-        CONTEXT.set(context);
+        try {
+            Playwright playwright = Playwright.create();
+            PLAYWRIGHT.set(playwright);
 
-        Page page = context.newPage();
-        page.setDefaultTimeout(ConfigReader.getInt("explicitWaitSeconds") * 1000.0);
-        PAGE.set(page);
+            BrowserType browserType;
+            if ("firefox".equals(browserName)) {
+                browserType = playwright.firefox();
+            } else if ("webkit".equals(browserName)) {
+                browserType = playwright.webkit();
+            } else {
+                browserType = playwright.chromium();
+            }
+
+            Browser browser = browserType.launch(new BrowserType.LaunchOptions().setHeadless(headless));
+            BROWSER.set(browser);
+
+            BrowserContext context = browser.newContext();
+            CONTEXT.set(context);
+
+            Page page = context.newPage();
+            page.setDefaultTimeout(ConfigReader.getInt("explicitWaitSeconds") * 1000.0);
+            PAGE.set(page);
+            LOGGER.info("Playwright browser started successfully");
+        } catch (RuntimeException exception) {
+            LOGGER.error("Failed to start Playwright browser: {}", browserName, exception);
+            closeBrowser();
+            throw exception;
+        }
     }
 
     public static boolean hasPage() {
@@ -58,13 +70,20 @@ public final class BrowserManager {
         Browser browser = BROWSER.get();
         Playwright playwright = PLAYWRIGHT.get();
 
-        if (context != null) context.close();
-        if (browser != null) browser.close();
-        if (playwright != null) playwright.close();
+        if (context != null || browser != null || playwright != null) {
+            LOGGER.info("Closing Playwright browser");
+        }
 
-        PAGE.remove();
-        CONTEXT.remove();
-        BROWSER.remove();
-        PLAYWRIGHT.remove();
+        try {
+            if (context != null) context.close();
+            if (browser != null) browser.close();
+            if (playwright != null) playwright.close();
+        } finally {
+            PAGE.remove();
+            CONTEXT.remove();
+            BROWSER.remove();
+            PLAYWRIGHT.remove();
+            LOGGER.info("Playwright browser resources released");
+        }
     }
 }
