@@ -45,6 +45,10 @@ public final class DriverManager {
         DRIVER.set(driver);
     }
 
+    public static boolean hasDriver() {
+        return DRIVER.get() != null;
+    }
+
     public static WebDriver getDriver() {
         WebDriver driver = DRIVER.get();
         if (driver == null) {
