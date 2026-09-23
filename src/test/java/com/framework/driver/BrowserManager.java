@@ -41,6 +41,10 @@ public final class BrowserManager {
         PAGE.set(page);
     }
 
+    public static boolean hasPage() {
+        return PAGE.get() != null;
+    }
+
     public static Page getPage() {
         Page page = PAGE.get();
         if (page == null) {
