@@ -15,6 +15,7 @@
         <cucumber.version>7.20.1</cucumber.version>
         <testng.version>7.5.1</testng.version>
         <allure.version>2.29.1</allure.version>
+        <log4j.version>2.24.3</log4j.version>
         <surefire.version>3.2.5</surefire.version>
     </properties>
 
@@ -36,6 +37,20 @@
             <artifactId>playwright</artifactId>
             <version>${playwright.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
