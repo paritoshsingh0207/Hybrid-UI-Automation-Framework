@@ -17,7 +17,7 @@ public class Hooks {
     @After
     public void tearDown(Scenario scenario) {
         try {
-            if (scenario.isFailed()) {
+            if (scenario.isFailed() && DriverManager.hasDriver()) {
                 scenario.attach(actions.takeScreenshot(), "image/png", "Failure Screenshot");
             }
         } finally {
