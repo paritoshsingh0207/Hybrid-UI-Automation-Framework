@@ -1,19 +1,5 @@
 target/
-artifacts/
-.allure/
+allure-report/
 .idea/
-.vscode/
 *.iml
-*.log
 .DS_Store
-
-# Never commit local credential files. Local runs may read them through
-# -Dcredentials.file, while CI should use its secret store/environment variables.
-.env
-.env.*
-!.env.example
-secrets.properties
-*.secrets.properties
-credentials.properties
-*-credentials.properties
-*.credentials.properties
