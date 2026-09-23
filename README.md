@@ -1,15 +1,16 @@
 # Selenium Java BDD Framework
 
-A lean but production-style Selenium + Java + Cucumber BDD framework.
+A lean but production-style Selenium + Java + Cucumber BDD + TestNG framework.
 
 ## Structure
 
-- BaseTest: shared test setup access
-- DriverManager: creates and manages WebDriver
-- Hooks: scenario lifecycle and failure screenshots
-- CommonActions: reusable click, sendText, dropdown, radio/checkbox, waits and screenshots
+- BaseTest: shared WebDriver access
+- DriverManager: creates and manages WebDriver; Chrome, Firefox and Edge supported
+- Hooks: scenario setup/teardown and failure screenshots
+- CommonActions: reusable click, sendText, dropdown, radio/checkbox, hover, waits and screenshots
 - Page Objects: locators and business-level page actions
 - Step Definitions: readable BDD glue only
+- TestRunner: Cucumber + TestNG execution
 - Allure: standard Cucumber Allure reporting
 
 ## Run
@@ -24,10 +25,17 @@ Headless:
 mvn clean test -Dheadless=true
 ```
 
+Choose a browser:
+
+```bash
+mvn clean test -Dbrowser=firefox
+mvn clean test -Dbrowser=edge
+```
+
 Allure:
 
 ```bash
 mvn allure:serve
 ```
 
-Default URL is configured in `src/test/resources/config.properties`.
+Default settings are in `src/test/resources/config.properties`.

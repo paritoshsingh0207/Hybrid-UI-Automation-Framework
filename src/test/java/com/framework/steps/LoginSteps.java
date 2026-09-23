@@ -6,7 +6,7 @@ import com.framework.utils.CommonActions;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.junit.Assert;
+import org.testng.Assert;
 
 public class LoginSteps {
     private final CommonActions actions = new CommonActions();
@@ -34,6 +34,6 @@ public class LoginSteps {
 
     @Then("successful login page should be displayed")
     public void successfulLoginPageShouldBeDisplayed() {
-        Assert.assertTrue("Successful login page was not displayed", loginPage.isSuccessPageDisplayed());
+        Assert.assertTrue(loginPage.isSuccessPageDisplayed(), "Successful login page was not displayed");
     }
 }
