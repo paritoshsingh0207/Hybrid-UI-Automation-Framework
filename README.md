@@ -1,20 +1,21 @@
 # Playwright Java BDD Framework
 
-A lean but production-style Playwright + Java + Cucumber BDD framework.
+A lean but production-style Playwright + Java + Cucumber BDD + TestNG framework.
 
 ## Structure
 
-- BaseTest: shared page access
-- BrowserManager: creates and manages Playwright, Browser, Context and Page
-- Hooks: scenario lifecycle and failure screenshots
+- BaseTest: shared Playwright Page access
+- BrowserManager: manages Playwright, Browser, BrowserContext and Page; Chromium, Firefox and WebKit supported
+- Hooks: scenario setup/teardown and failure screenshots
 - CommonActions: reusable click, sendText, dropdown, radio/checkbox, hover and screenshots
 - Page Objects: selectors and business-level page actions
 - Step Definitions: readable BDD glue only
+- TestRunner: Cucumber + TestNG execution
 - Allure: standard Cucumber Allure reporting
 
 ## Run
 
-Install Playwright Chromium once if required:
+Install Chromium once if required:
 
 ```bash
 mvn exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install chromium"
@@ -38,4 +39,4 @@ Allure:
 mvn allure:serve
 ```
 
-Default URL is configured in `src/test/resources/config.properties`.
+Default settings are in `src/test/resources/config.properties`.
