@@ -21,6 +21,9 @@ public final class BrowserManager {
     public static void startBrowser() {
         String browserName = ConfigReader.get("browser").toLowerCase();
         boolean headless = Boolean.parseBoolean(ConfigReader.get("headless"));
+        int actionTimeoutSeconds = ConfigReader.getInt("explicitWaitSeconds");
+        int navigationTimeoutSeconds = ConfigReader.getInt("navigationTimeoutSeconds");
+
         LOGGER.info("Starting Playwright browser: {} | headless={}", browserName, headless);
 
         try {
@@ -43,9 +46,15 @@ public final class BrowserManager {
             CONTEXT.set(context);
 
             Page page = context.newPage();
-            page.setDefaultTimeout(ConfigReader.getInt("explicitWaitSeconds") * 1000.0);
+            page.setDefaultTimeout(actionTimeoutSeconds * 1000.0);
+            page.setDefaultNavigationTimeout(navigationTimeoutSeconds * 1000.0);
             PAGE.set(page);
-            LOGGER.info("Playwright browser started successfully");
+
+            LOGGER.info(
+                    "Playwright browser started successfully | actionTimeout={}s | navigationTimeout={}s",
+                    actionTimeoutSeconds,
+                    navigationTimeoutSeconds
+            );
         } catch (RuntimeException exception) {
             LOGGER.error("Failed to start Playwright browser: {}", browserName, exception);
             closeBrowser();
